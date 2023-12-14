@@ -1,36 +1,37 @@
 import socket
 
-# Create a socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def sock_config():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(('', 32320))
+    sock.listen(1)
+    return sock
 
-# Ensure that you can restart your server quickly when it terminates
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+def loadData(path: str):
+    return open(path, "wb")
 
-# Set the client socket's TCP "well-known port" number
-well_known_port = 32320
-sock.bind(('', well_known_port))
+def main():
+    sock = sock_config()
 
-# Set the number of clients waiting for connection that can be queued
-sock.listen(1)
+    file = loadData('music_output.txt')
 
-# create file to store received text
-file = open("music_output.txt", "wb")
-
-# loop waiting for connections (terminate with Ctrl-C)
-try:
-    while 1:
-        newSocket, address = sock.accept()
-        print("Connected from", address)
-        # loop serving the new client
+    try:
         while 1:
-            receivedData = newSocket.recv(2000)
-            if not receivedData: break
-            # Print the data to the file
-            print("recv:", receivedData)
-            file.write(receivedData)
-        newSocket.close()
-        print("Disconnected from", address)
-finally:
-    sock.close(  )
-    file.close(  )
+            newSocket, address = sock.accept()
+            print("Connected from", address)
+            # loop serving the new client
+            while 1:
+                receivedData = newSocket.recv(100)
+                if not receivedData: break
+                # Print the data to the file
+                print("recv:", receivedData)
+                file.write(receivedData)
+            newSocket.close()
+            print("Disconnected from", address)
+    finally:
+        sock.close(  )
+        file.close(  )
 
+
+if __name__ == '__main__':
+    main()

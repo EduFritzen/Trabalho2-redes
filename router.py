@@ -4,23 +4,15 @@ from scapy.all import *
 from scapy.layers.inet import IP, TCP, UDP, ICMP
 from scapy.layers.l2 import Ether
 
-nosso_deus_raniery = "Raniery"
-
-def substitute_badwords(payload: str):
-    safe_payload = payload
+def substitute_badwords(text: str):
+    copy = text
     with open("badwords.txt", "r") as file:
         for word in file.readlines():
-            # pass
-            wordSemBarraN = word.replace('\n', '')
-            substitute_word = "*" * len(wordSemBarraN)
-            if len(wordSemBarraN) == len(nosso_deus_raniery):
-                substitute_word = nosso_deus_raniery
-            #safe_payload = safe_payload.replace(" " + wordSemBarraN + " ", " " + substitute_word + " ")
-            safe_payload = safe_payload.replace(wordSemBarraN,substitute_word)
-    print("t1: ", payload)        
-    print("t2: ", safe_payload)
-    return safe_payload
-
+            word = word.replace('\n', '')
+            copy = copy.replace(word,"*" * len(word))
+    print("t1: ", text)        
+    print("t2: ", copy)
+    return copy
 
 def main():
     public_interface = 'r-eth1'
@@ -35,7 +27,7 @@ def main():
         TCP: {"destination_port": "dport", "source_port": "sport"}
     }
 
-    def substitute_badwords_in_pkt(pkt):
+    def badword_filter(pkt):
         if TCP in pkt and pkt[TCP].payload:
             payload = pkt[TCP].payload.load.decode('utf-8')
             safe_payload = bytes(substitute_badwords(payload), 'utf-8')
@@ -116,7 +108,7 @@ def main():
             iface = output_interface[pkt.sniffed_on]
 
             if new_pkt:
-                safe_packet = substitute_badwords_in_pkt(new_pkt)
+                safe_packet = badword_filter(new_pkt)
                 # safe_packet.show()
                 sendp(safe_packet, iface=iface, verbose=False)
 
