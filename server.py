@@ -12,26 +12,23 @@ def loadData(path: str):
 
 def main():
     sock = sock_config()
-
     file = loadData('music_output.txt')
-
     try:
         while 1:
             newSocket, address = sock.accept()
             print("Connected from", address)
-            # loop serving the new client
             while 1:
                 receivedData = newSocket.recv(100)
-                if not receivedData: break
-                # Print the data to the file
+                if not receivedData:
+                    break
                 print("recv:", receivedData)
                 file.write(receivedData)
             newSocket.close()
             print("Disconnected from", address)
-    finally:
-        sock.close(  )
-        file.close(  )
-
-
+            sock.close()
+            file.close()
+    except:
+        return
+        
 if __name__ == '__main__':
     main()

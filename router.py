@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from scapy.all import *
 
 from scapy.layers.inet import IP, TCP, UDP, ICMP
@@ -10,8 +9,8 @@ def substitute_badwords(text: str):
         for word in file.readlines():
             word = word.replace('\n', '')
             copy = copy.replace(word,"*" * len(word))
-    print("t1: ", text)        
-    print("t2: ", copy)
+    print("\nt1:\n", text)        
+    print("\nt2:\n", copy)
     return copy
 
 def main():
@@ -27,15 +26,15 @@ def main():
         TCP: {"destination_port": "dport", "source_port": "sport"}
     }
 
-    def badword_filter(pkt):
-        if TCP in pkt and pkt[TCP].payload:
-            payload = pkt[TCP].payload.load.decode('utf-8')
-            safe_payload = bytes(substitute_badwords(payload), 'utf-8')
+    def badword_filter(newpkt):
+        if TCP in newpkt and newpkt[TCP].payload:
+            payload = newpkt[TCP].payload.load.decode('utf-8')
+            payload_filtered = bytes(substitute_badwords(payload), 'utf-8')
 
-            safe_packet = pkt.copy()
-            safe_packet[TCP].payload = Raw(safe_payload)
-            return recalc_check_sum(safe_packet)
-        return pkt
+            newpkt_copy = newpkt.copy()
+            newpkt_copy[TCP].payload = Raw(payload_filtered)
+            return recalc_check_sum(newpkt_copy)
+        return newpkt
 
     def recalc_check_sum(pkt: Packet):
         del pkt[IP].chksum
@@ -91,10 +90,6 @@ def main():
         return destination_port, source_port, protocol
 
     class NatRouter:
-        """
-            key: (protocol, public_host_ip, public_host_port, internal_host_port)
-            value: internal_host_ip
-        """
         translation_table = {}
 
         def nat(self, pkt: Packet):
@@ -108,9 +103,9 @@ def main():
             iface = output_interface[pkt.sniffed_on]
 
             if new_pkt:
-                safe_packet = badword_filter(new_pkt)
-                # safe_packet.show()
-                sendp(safe_packet, iface=iface, verbose=False)
+                new_pkt_filtered = badword_filter(new_pkt)
+                #new_pkt_filtered.show()
+                sendp(new_pkt_filtered, iface=iface, verbose=False)
 
         def handle(self, pkt: Packet):
             if pkt.sniffed_on == public_interface:
