@@ -15,8 +15,10 @@ def substitute_badwords(payload: str):
             substitute_word = "*" * len(wordSemBarraN)
             if len(wordSemBarraN) == len(nosso_deus_raniery):
                 substitute_word = nosso_deus_raniery
-            safe_payload = safe_payload.replace(" " + wordSemBarraN + " ", " " + substitute_word + " ")
-    # print(safe_payload)
+            #safe_payload = safe_payload.replace(" " + wordSemBarraN + " ", " " + substitute_word + " ")
+            safe_payload = safe_payload.replace(wordSemBarraN,substitute_word)
+    print("t1: ", payload)        
+    print("t2: ", safe_payload)
     return safe_payload
 
 

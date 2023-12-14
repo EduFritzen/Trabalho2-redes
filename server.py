@@ -14,7 +14,7 @@ sock.bind(('', well_known_port))
 sock.listen(1)
 
 # create file to store received text
-file = open("received.txt", "wb")
+file = open("music_output.txt", "wb")
 
 # loop waiting for connections (terminate with Ctrl-C)
 try:
@@ -26,10 +26,11 @@ try:
             receivedData = newSocket.recv(2000)
             if not receivedData: break
             # Print the data to the file
-            print(receivedData)
+            print("recv:", receivedData)
             file.write(receivedData)
         newSocket.close()
         print("Disconnected from", address)
 finally:
     sock.close(  )
     file.close(  )
+
